@@ -54,7 +54,7 @@ client := oss.NewClient(cfg)
 ```java
 ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
 conf.setSignatureVersion(SignVersion.V4);
-conf.setSLDEnabled(false); // path-style
+conf.setSLDEnabled(true); // path-style: the bucket goes in the path
 OSS client = OSSClientBuilder.create()
     .endpoint("http://127.0.0.1:8080")
     .credentialsProvider(new DefaultCredentialProvider("fake-ak", "fake-sk"))
