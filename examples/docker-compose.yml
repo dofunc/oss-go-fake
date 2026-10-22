@@ -1,0 +1,11 @@
+services:
+  oss-go-fake:
+    image: ghcr.io/dofunc/oss-go-fake:latest
+    command: ["serve", "--config", "/etc/oss-go-fake/config.yaml"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config.yaml:/etc/oss-go-fake/config.yaml:ro
+      # The image runs as uid 65532: chown 65532:65532 ./data before the first start.
+      - ./data:/data
+    restart: unless-stopped

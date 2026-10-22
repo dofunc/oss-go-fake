@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oss-go-fake
+data:
+  config.yaml: |
+    listen: ":8080"
+    data-dir: /data
+    region: cn-hangzhou
+    access-keys:
+      - { id: fake-ak, secret: fake-sk }
+    buckets:
+      - name: example
+        acl: private
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oss-go-fake-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oss-go-fake
+spec:
+  replicas: 1 # one writer per data directory
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: oss-go-fake
+  template:
+    metadata:
+      labels:
+        app: oss-go-fake
+    spec:
+      securityContext:
+        fsGroup: 65532
+      containers:
+        - name: oss-go-fake
+          image: ghcr.io/dofunc/oss-go-fake:latest
+          args: ["serve", "--config", "/etc/oss-go-fake/config.yaml"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - { name: config, mountPath: /etc/oss-go-fake, readOnly: true }
+            - { name: data, mountPath: /data }
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+      volumes:
+        - name: config
+          configMap:
+            name: oss-go-fake
+        - name: data
+          persistentVolumeClaim:
+            claimName: oss-go-fake-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oss-go-fake
+spec:
+  selector:
+    app: oss-go-fake
+  ports:
+    - port: 8080
+      targetPort: 8080

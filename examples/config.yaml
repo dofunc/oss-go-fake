@@ -1,0 +1,21 @@
+# Example configuration. Every key mirrors a command-line flag; flags win when both are given.
+listen: ":8080"
+data-dir: /data
+# Requests to <bucket>.oss.fake.local are virtual-hosted; leave empty for path-style only.
+domain: oss.fake.local
+region: cn-hangzhou
+protocols: [oss]
+log-level: info
+access-keys:
+  - { id: fake-ak, secret: fake-sk }
+buckets:
+  - name: example
+    acl: private
+    cors:
+      - allowed-origins: ["http://localhost:3000"]
+        allowed-methods: [GET, HEAD, PUT]
+        allowed-headers: ["*"]
+        expose-headers: [ETag]
+        max-age-seconds: 600
+  - name: example-public
+    acl: public-read

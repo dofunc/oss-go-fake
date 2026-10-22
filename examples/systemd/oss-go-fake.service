@@ -1,0 +1,27 @@
+# Run the binary as a service on a VM, without Docker.
+#
+#   sudo install -m 0755 oss-go-fake-linux-amd64 /usr/local/bin/oss-go-fake
+#   sudo install -D -m 0640 config.yaml /etc/oss-go-fake/config.yaml
+#   sudo cp oss-go-fake.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now oss-go-fake
+#
+# DynamicUser creates the service user, and StateDirectory owns /var/lib/oss-go-fake for it.
+# Keep data-dir in config.yaml unset or pointing there.
+[Unit]
+Description=oss-go-fake, an Alibaba Cloud OSS emulator backed by a local directory
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/oss-go-fake serve --config /etc/oss-go-fake/config.yaml --data-dir /var/lib/oss-go-fake
+DynamicUser=yes
+StateDirectory=oss-go-fake
+Restart=on-failure
+RestartSec=2s
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
